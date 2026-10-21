@@ -1,0 +1,7 @@
+buildroot/output/
+*.img
+*.img.gz
+*.log
+.DS_Store
+__pycache__/
+*.pyc
