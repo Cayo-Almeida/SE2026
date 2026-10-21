@@ -1,0 +1,4 @@
+output-rpi4/
+*.img
+*.img.gz
+*.log
