@@ -1,0 +1,5 @@
+Cayo -1 Cayo -1 =233514 /home/Cayo /bin/sh docker Cayo_TP8
+Felipe -1 Felipe -1 =230418 /home/Felipe /bin/sh docker Felipe_TP8
+Leonardo -1 Leonardo -1 =231046 /home/Leonardo /bin/sh docker Leonardo_TP8
+Agatha -1 Agatha -1 =1 /home/Agatha /bin/sh docker Agatha_TP8
+Leticia -1 Leticia -1 =2 /home/Leticia /bin/sh docker Leticia_TP8
