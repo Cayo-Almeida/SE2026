@@ -1,0 +1,56 @@
+#!/bin/sh
+
+case "$1" in
+    start)
+        echo "Iniciando aplicacao Flask..."
+
+        # Aguarda o daemon do Docker ficar disponivel
+        i=0
+        while [ "$i" -lt 60 ]; do
+            if docker info >/dev/null 2>&1; then
+                break
+            fi
+            sleep 2
+            i=$((i + 1))
+        done
+
+        # Verifica se o Docker iniciou
+        if ! docker info >/dev/null 2>&1; then
+            echo "Erro: Docker nao iniciou."
+            exit 1
+        fi
+
+        # Carrega a imagem se ela ainda nao existir
+        if ! docker image inspect flask-tp8:1.0 >/dev/null 2>&1; then
+            docker load -i /opt/docker/flasf-tp8-arm64.tar || exit 1
+        fi
+
+        # Inicia o container caso ainda nao esteja em execucao
+        if ! docker ps --format '{{.Names}}' | grep -qx 'flask-tp8'; then
+            docker rm -f flask-tp8 >/dev/null 2>&1 || true
+            docker run -d \
+                --name flask-tp8 \
+                --restart unless-stopped \
+                -p 5000:5000 \
+                flask-tp8:1.0 || exit 1
+        fi
+
+        echo "Aplicacao Flask iniciada."
+        ;;
+
+    stop)
+        docker stop flask-tp8 >/dev/null 2>&1 || true
+        ;;
+
+    restart)
+        "$0" stop
+        "$0" start
+        ;;
+
+    *)
+        echo "Uso: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
