@@ -1,0 +1,15 @@
+flowchart TD
+    A["Computador cliente<br/>Navegador ou cliente HTTP"]
+    B["Rede local<br/>HTTP: porta 5000"]
+    C["Raspberry Pi 4<br/>Arquitetura ARM64"]
+    D["Linux embarcado<br/>Buildroot"]
+    E["Docker Engine"]
+    F["Contêiner flask-tp8"]
+    G["Aplicação Python<br/>Flask :5000"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
