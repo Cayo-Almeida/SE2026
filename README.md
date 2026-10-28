@@ -1,43 +1,41 @@
 # TP-Aula08 — Linux Embarcado com Buildroot e Docker
 
-## 1. Identificação do projeto
+## 1. Identificação
 
-- **Disciplina:** [preencher]
 - **Curso:** Engenharia da Computação
 - **Instituição:** Universidade Santa Cecília (Unisanta)
-- **Integrantes:** [nomes completos e RAs]
-- **Professor(a):** [preencher]
+- **Matéria:** Sistemas Embarcados
+- **Professor(a):** Sérgio Schina de Andrade
+- **Alunos(as):** Agatha Nicole Marques Fávaro -231335; Letícia Moreira Ribero - ; Cayo - ; Felipe - ; Leonardo - 
 - **Plataforma-alvo:** Raspberry Pi 4
 - **Sistema de construção:** Buildroot
-- **Versão do Buildroot:** 2026.08-345-ga962be2eea
+- **Versão do Buildroot:** `2026.08-345-ga962be2eea`
+- **Aplicação web:** Python com Flask
+- **Contêiner:** Docker para arquitetura ARM64
 
 ## 2. Objetivo
 
-Desenvolver uma imagem Linux personalizada para a Raspberry Pi 4 utilizando Buildroot, com suporte ao Docker Engine e execução automática de uma aplicação web desenvolvida em Python com Flask.
+O objetivo deste projeto é construir uma imagem Linux personalizada para a Raspberry Pi 4 utilizando Buildroot, integrando o Docker Engine e uma aplicação web desenvolvida em Python com Flask.
 
-A proposta é inicializar o sistema com hostname personalizado, usuário configurado durante a construção da imagem, mensagem de boas-vindas no login e serviços necessários para disponibilizar a aplicação na rede local.
+O sistema foi configurado para utilizar um hostname personalizado, um usuário definido durante a construção da imagem, uma mensagem personalizada de login e um script de inicialização responsável por carregar e executar a aplicação em um contêiner Docker.
 
-A aplicação deve responder à seguinte URL:
-
-`http://IP_DA_RASPBERRY:5000`
-
-A página inicial deve exibir exatamente:
+A aplicação deve ser acessível pela rede local, utilizando a porta 5000, e apresentar na página inicial a seguinte mensagem exata:
 
 `Helooowww world eng. Computacional!!!!!!!`
 
-## 3. Arquitetura
+## 3. Arquitetura do projeto
 
-O projeto é composto pelos seguintes elementos:
+A solução integra os seguintes componentes:
 
-1. **Buildroot:** gera o sistema Linux personalizado.
-2. **Kernel Linux:** configurado para a plataforma Raspberry Pi 4.
-3. **Sistema de arquivos raiz:** contém os arquivos e serviços necessários ao funcionamento do sistema.
-4. **Docker Engine:** executa e gerencia os contêineres.
-5. **Imagem Docker ARM64:** contém a aplicação Flask e suas dependências.
-6. **Script de inicialização:** carrega a imagem Docker, quando necessário, e inicia o contêiner automaticamente.
-7. **Aplicação Flask:** disponibiliza a página web na porta 5000.
+- **Buildroot:** ferramenta utilizada para gerar o sistema Linux personalizado.
+- **Kernel Linux:** configurado para a plataforma Raspberry Pi 4.
+- **Sistema de arquivos raiz:** contém as configurações, os arquivos de inicialização, o usuário e os componentes necessários à execução do sistema.
+- **Docker Engine:** responsável pela execução e pelo gerenciamento dos contêineres.
+- **Imagem Docker ARM64:** contém a aplicação Flask e suas dependências.
+- **Script de inicialização:** aguarda a disponibilidade do Docker, carrega a imagem local quando necessário e inicia o contêiner.
+- **Aplicação Flask:** disponibiliza a página web na porta 5000.
 
-O Docker publica a porta 5000 do contêiner na porta 5000 do sistema hospedeiro.
+A porta 5000 do contêiner é publicada na porta 5000 do sistema hospedeiro, permitindo o acesso à aplicação por meio do endereço IP da Raspberry Pi.
 
 ## 4. Estrutura do repositório
 
@@ -70,44 +68,38 @@ TP-Aula08/
 └── README.md
 ```
 
-O diretório `br2-external/` reúne as personalizações específicas deste projeto. O diretório `flask-app/` contém o código-fonte e os arquivos utilizados na construção da imagem Docker.
+O diretório `br2-external/` contém as personalizações específicas do projeto para o Buildroot, incluindo a configuração da plataforma, a tabela de usuários e o overlay do sistema de arquivos.
 
-O arquivo TAR da imagem Docker é incluído no overlay do sistema para permitir seu carregamento local durante a inicialização, sem depender do download da imagem pela Internet.
+O diretório `flask-app/` contém o código-fonte da aplicação e os arquivos necessários à construção da imagem Docker.
 
-## 5. Configurações do sistema
+O diretório `docker/` armazena a imagem Docker exportada em formato TAR. Uma cópia desse arquivo é incorporada ao overlay para permitir o carregamento local da imagem no sistema embarcado.
 
-| Configuração | Valor |
+O diretório `evidence/` contém o registro SHA-256 da imagem Linux gerada.
+
+## 5. Configurações implementadas
+
+| Parâmetro | Configuração |
 |---|---|
+| Plataforma-alvo | Raspberry Pi 4 |
+| Arquitetura da imagem Docker | ARM64 |
 | Hostname | `agatha-linux` |
 | Usuário configurado | `SE2026` |
 | Diretório pessoal | `/home/SE2026` |
 | Shell do usuário | `/bin/sh` |
-| Porta da aplicação | `5000` |
-| Nome do contêiner | `flask-tp8` |
 | Imagem Docker | `flask-tp8:1.0` |
-| Arquitetura da imagem Docker | ARM64 |
-| Formato de saída do Buildroot | `sdcard.img` |
+| Contêiner | `flask-tp8` |
+| Porta publicada | `5000:5000` |
+| Arquivo de saída | `sdcard.img` |
 
-A senha do usuário é configurada por meio da tabela de usuários utilizada pelo Buildroot. O valor da senha não deve ser incluído neste documento nem publicado no repositório.
+O usuário é configurado durante a construção do sistema por meio de `users.table`. A senha é definida por hash no arquivo de configuração de usuários e não deve ser publicada no repositório.
 
-## 6. Pré-requisitos
+A mensagem personalizada de login é configurada por meio das opções do Buildroot.
 
-Para reproduzir a construção, são necessários:
+## 6. Construção da imagem Linux
 
-- Ambiente Linux compatível com o Buildroot.
-- Código-fonte do Buildroot na versão utilizada pelo projeto.
-- Git.
-- Dependências de compilação exigidas pelo Buildroot.
-- Espaço em disco suficiente para os fontes, ferramentas e arquivos gerados.
-- Docker, caso seja necessário reconstruir a imagem da aplicação.
+A compilação foi realizada em uma máquina virtual Ubuntu Server na Azure.
 
-A compilação original deste projeto foi realizada em uma VM Ubuntu Server na Azure.
-
-## 7. Construção da imagem Linux
-
-Os comandos a seguir pressupõem que o Buildroot esteja em `~/buildroot` e o repositório do projeto em `~/TP-Aula08`.
-
-### 7.1. Configurar o Buildroot
+Considerando o Buildroot em `~/buildroot` e o projeto em `~/TP-Aula08`, a configuração pode ser carregada com:
 
 ```bash
 cd ~/buildroot
@@ -116,27 +108,19 @@ make BR2_EXTERNAL=/home/azureuser/TP-Aula08/br2-external \
     raspberrypi4_64_defconfig
 ```
 
-Esse comando carrega a configuração específica da Raspberry Pi 4 mantida no repositório externo do projeto.
-
-### 7.2. Compilar o sistema
+Em seguida, a imagem pode ser construída com:
 
 ```bash
-cd ~/buildroot
-
 make BR2_EXTERNAL=/home/azureuser/TP-Aula08/br2-external -j2
 ```
 
-A compilação pode demorar, dependendo dos recursos disponíveis e da necessidade de baixar e compilar dependências.
-
-### 7.3. Localizar a imagem gerada
-
-Após uma compilação bem-sucedida, o arquivo esperado é:
+Após a compilação bem-sucedida, o arquivo de imagem é gerado em:
 
 ```text
 ~/buildroot/output/images/sdcard.img
 ```
 
-Para verificar o arquivo:
+Para consultar o tamanho, o tipo e o hash do arquivo:
 
 ```bash
 ls -lh ~/buildroot/output/images/sdcard.img
@@ -144,77 +128,59 @@ file ~/buildroot/output/images/sdcard.img
 sha256sum ~/buildroot/output/images/sdcard.img
 ```
 
-O hash SHA-256 permite verificar a integridade do arquivo. O registro da compilação realizada está em `evidence/sdcard-sha256.txt`.
+A imagem `sdcard.img` foi gerada durante o desenvolvimento. Seu hash SHA-256 foi registrado em `evidence/sdcard-sha256.txt`.
 
-Os arquivos gerados em `buildroot/output/` e a imagem `.img` não são versionados diretamente pelo Git.
+Os arquivos de saída do Buildroot não são versionados diretamente pelo Git. O arquivo `.gitignore` exclui `buildroot/output/`, imagens `.img`, imagens `.img.gz`, logs e arquivos temporários Python.
 
-## 8. Gravação do cartão SD
+## 7. Gravação da imagem no cartão SD
 
-A gravação da imagem deve ser realizada em um cartão SD adequado à Raspberry Pi 4.
+Para utilizar a imagem na Raspberry Pi 4:
 
-1. Copie `sdcard.img` para um computador com leitor de cartão SD.
+1. Disponibilize o arquivo `sdcard.img` em um computador com leitor de cartão SD.
 2. Abra uma ferramenta de gravação de imagens, como o Raspberry Pi Imager ou o balenaEtcher.
-3. Selecione a imagem `sdcard.img`.
-4. Selecione cuidadosamente o cartão SD de destino.
-5. Grave a imagem e aguarde a conclusão.
+3. Selecione o arquivo `sdcard.img`.
+4. Selecione o cartão SD de destino.
+5. Confirme a operação e aguarde a gravação.
 6. Insira o cartão na Raspberry Pi 4.
 
-**Atenção:** a gravação sobrescreve os dados do dispositivo selecionado. Confirme o destino antes de iniciar.
+**Atenção:** a gravação sobrescreve os dados do dispositivo selecionado. Verifique cuidadosamente se o cartão SD correto foi escolhido.
 
-## 9. Inicialização do sistema
+## 8. Inicialização do sistema e do Docker
 
-Após inserir o cartão SD e ligar a Raspberry Pi 4, o sistema deverá inicializar com o hostname configurado e disponibilizar o login no console.
-
-O usuário definido para o projeto é:
-
-```text
-Usuário: SE2026
-Senha: a senha definida durante a construção da imagem
-```
-
-A senha deve ser obtida pela equipe responsável pelo projeto. Não a armazene neste README nem a publique no Git.
-
-A mensagem personalizada de login está configurada no Buildroot.
-
-## 10. Inicialização do Docker e da aplicação
-
-O script `S99docker-flask` é instalado em:
+O script de inicialização criado para o projeto está localizado em:
 
 ```text
 /etc/init.d/S99docker-flask
 ```
 
-Durante a inicialização, ele:
+Durante a inicialização, o script:
 
 1. Aguarda o Docker Engine ficar disponível.
 2. Verifica se a imagem `flask-tp8:1.0` já está carregada.
-3. Carrega o arquivo TAR local caso a imagem ainda não exista.
-4. Cria e inicia o contêiner `flask-tp8` caso ele não esteja em execução.
-5. Publica a porta 5000 do contêiner na porta 5000 do sistema.
+3. Carrega a imagem a partir de `/opt/docker/flasf-tp8-arm64.tar`, caso necessário.
+4. Verifica se o contêiner `flask-tp8` já está em execução.
+5. Cria e inicia o contêiner quando necessário.
+6. Publica a porta 5000 do contêiner na porta 5000 do sistema.
 
-O contêiner é iniciado com a política de reinicialização `unless-stopped`.
+O contêiner é executado com a política de reinicialização `unless-stopped`, permitindo que o Docker tente reiniciá-lo automaticamente quando necessário.
 
-O arquivo da imagem Docker está localizado no sistema de arquivos da imagem Linux em:
+A inclusão da imagem Docker no sistema de arquivos permite que ela seja carregada localmente, sem precisar baixá-la durante a apresentação. Isso não elimina a necessidade de rede para acessar a aplicação a partir de outro dispositivo.
 
-```text
-/opt/docker/flasf-tp8-arm64.tar
-```
+## 9. Aplicação Flask
 
-## 11. Aplicação Flask
+O código-fonte da aplicação está em `flask-app/app.py`. A imagem Docker é construída a partir do `Dockerfile` e das dependências descritas em `requirements.txt`.
 
-O código da aplicação está em `flask-app/app.py`.
+A aplicação disponibiliza a rota `/` e utiliza o endereço `0.0.0.0` na porta 5000 para aceitar conexões direcionadas ao contêiner.
 
-A aplicação utiliza a rota `/` e deve escutar em todas as interfaces de rede do contêiner, na porta 5000.
-
-Resposta esperada:
+A resposta esperada da página inicial é:
 
 ```text
 Helooowww world eng. Computacional!!!!!!!
 ```
 
-A imagem Docker é construída para a arquitetura ARM64, correspondente à plataforma-alvo do projeto.
+A imagem Docker foi construída para a arquitetura ARM64, correspondente à plataforma-alvo.
 
-Para reconstruir a imagem em um ambiente que possua Docker e suporte à compilação multiplataforma:
+Para reconstruir a imagem Docker em um ambiente com Docker Buildx:
 
 ```bash
 cd ~/TP-Aula08
@@ -234,7 +200,7 @@ sudo docker save \
     flask-tp8:1.0
 ```
 
-Depois de gerar o arquivo, confira as permissões e atualize a cópia utilizada no overlay:
+Após atualizar a imagem, é necessário substituir também a cópia presente no overlay:
 
 ```bash
 sudo chown "$USER":"$USER" docker/flasf-tp8-arm64.tar
@@ -244,13 +210,37 @@ cp docker/flasf-tp8-arm64.tar \
     br2-external/board/rpi4/overlay/opt/docker/
 ```
 
-Se a imagem Docker for alterada, será necessário reconstruir a imagem Linux para incorporar a nova versão do TAR ao sistema de arquivos.
+Caso a imagem Docker seja modificada, o Buildroot deverá ser executado novamente para incorporar o arquivo atualizado à imagem Linux.
 
-## 12. Verificação na Raspberry Pi
+## 10. Acesso à aplicação pela rede local
 
-Após a inicialização, os comandos abaixo podem ser utilizados no console da Raspberry Pi.
+Após a inicialização da Raspberry Pi, o endereço IPv4 pode ser consultado com:
 
-### 12.1. Verificar o hostname
+```bash
+ip addr
+```
+
+Em outro dispositivo conectado à mesma rede, o acesso deverá ser realizado por meio de:
+
+```text
+http://IP_DA_RASPBERRY:5000
+```
+
+Substitua `IP_DA_RASPBERRY` pelo endereço IPv4 real da placa.
+
+A página deverá exibir:
+
+```text
+Helooowww world eng. Computacional!!!!!!!
+```
+
+A disponibilidade do serviço depende da inicialização correta do Docker, da execução do contêiner, da configuração da rede e da publicação da porta 5000.
+
+## 11. Verificação do funcionamento
+
+No sistema embarcado, os comandos abaixo podem ser utilizados para inspecionar os componentes.
+
+### Hostname
 
 ```bash
 hostname
@@ -262,95 +252,69 @@ Resultado esperado:
 agatha-linux
 ```
 
-### 12.2. Verificar o Docker Engine
+### Docker
 
 ```bash
 docker info
-docker ps
 docker images
+docker ps
 ```
 
-Deve ser possível identificar a imagem `flask-tp8:1.0` e o contêiner `flask-tp8`.
-
-### 12.3. Verificar os logs da aplicação
+### Logs do contêiner
 
 ```bash
 docker logs flask-tp8
 ```
 
-### 12.4. Verificar a resposta HTTP localmente
+### Resposta HTTP local
 
-Se o sistema possuir `curl`:
+Se houver um cliente HTTP disponível no sistema:
 
 ```bash
 curl http://127.0.0.1:5000
 ```
 
-Resposta esperada:
+A resposta esperada é:
 
 ```text
 Helooowww world eng. Computacional!!!!!!!
 ```
 
-Se `curl` não estiver disponível na imagem, utilize outro cliente HTTP disponível ou teste a partir de um computador da mesma rede.
+Esses comandos descrevem os procedimentos de verificação a serem utilizados no hardware-alvo.
 
-## 13. Acesso pela rede local
+## 12. Estado atual e evidências
 
-Para descobrir o endereço IP atribuído à Raspberry Pi, execute:
+Durante o desenvolvimento, foram realizadas as seguintes etapas:
 
-```bash
-ip addr
-```
+- Configuração do ambiente Buildroot na VM Azure.
+- Configuração da plataforma Raspberry Pi 4.
+- Personalização do hostname e da mensagem de login.
+- Configuração do usuário por meio da tabela de usuários do Buildroot.
+- Construção da imagem Docker para ARM64.
+- Criação do script de inicialização automática do contêiner.
+- Incorporação do arquivo TAR da imagem Docker ao overlay do sistema.
+- Compilação da imagem Linux `sdcard.img`.
+- Registro do hash SHA-256 da imagem gerada.
+- Organização dos arquivos do projeto em um repositório Git.
 
-Identifique o endereço IPv4 da interface conectada à rede local.
+A resposta exata da aplicação Flask foi verificada dentro do contêiner durante os testes realizados na VM. A imagem Docker foi identificada como `linux/arm64`.
 
-Em outro computador ou celular conectado à mesma rede, abra:
+A compilação da imagem Linux foi concluída no ambiente Azure. Entretanto, não foi realizada a validação final na Raspberry Pi 4 física.
 
-```text
-http://IP_DA_RASPBERRY:5000
-```
+Consequentemente, a inicialização pelo cartão SD, a execução automática dos serviços no hardware-alvo e o acesso à aplicação a partir de outro dispositivo da rede ainda não estão confirmados.
 
-Substitua `IP_DA_RASPBERRY` pelo endereço IPv4 real da placa.
+## 13. Limitações
 
-A página deverá exibir exatamente:
+A compilação bem-sucedida no ambiente de desenvolvimento não comprova, por si só, o funcionamento integral da imagem no hardware-alvo.
 
-```text
-Helooowww world eng. Computacional!!!!!!!
-```
+A validação física depende da disponibilidade de uma Raspberry Pi 4, de um cartão SD gravado com a imagem gerada e de uma rede local para testar o acesso à aplicação.
 
-O acesso externo depende da conexão de rede, do endereço IP atribuído e da publicação correta da porta 5000.
+Os resultados documentados devem ser interpretados de acordo com o estado atual de desenvolvimento descrito nesta seção.
 
-## 14. Evidências e testes
+## 14. Repositório
 
-As evidências do projeto devem ser organizadas no diretório `evidence/`.
+O código-fonte, as configurações e os arquivos de integração do projeto são mantidos em um repositório Git.
 
-Até a elaboração desta documentação, foram realizadas a construção da imagem Linux na VM Azure, a construção da imagem Docker ARM64 e a verificação da resposta Flask dentro do contêiner.
+**Repositório:** http://github.com/Cayo-Almeida/SE2026
 
-A imagem `sdcard.img` foi gerada pelo Buildroot, e seu hash SHA-256 foi registrado em `evidence/sdcard-sha256.txt`.
-
-**Pendente de validação na Raspberry Pi física:**
-
-- Inicialização pelo cartão SD.
-- Login com o usuário configurado.
-- Exibição da mensagem personalizada.
-- Inicialização automática do Docker.
-- Carregamento da imagem Docker sem depender de download externo.
-- Inicialização automática do contêiner.
-- Acesso à aplicação a partir de outro dispositivo na mesma rede.
-- Confirmação da resposta HTTP exata exigida pela atividade.
-
-Os resultados desses testes deverão ser registrados em `docs/testes.md` e complementados por logs, capturas de tela ou fotografias pertinentes.
-
-## 15. Limitações conhecidas
-
-A compilação em uma VM Azure não substitui a validação da imagem na Raspberry Pi 4 física.
-
-O comportamento de inicialização, a rede e a compatibilidade de todos os componentes devem ser confirmados no hardware-alvo antes de considerar a entrega integralmente validada.
-
-## 16. Repositório e versão final
-
-- **Repositório Git:** [inserir URL do repositório]
-- **Tag da entrega:** `tp8-final` — criar após a validação final.
-- **Versão final:** preencher após a conclusão dos testes no hardware.
-
-O histórico de commits deve registrar as etapas relevantes de desenvolvimento e integração, e não somente o estado final do projeto.
+O histórico de commits registra as etapas de desenvolvimento e integração. A versão final deve corresponder aos arquivos efetivamente entregues, sem incluir como concluídos testes que não foram executados.
