@@ -1,0 +1,46 @@
+#!/bin/sh
+IMAGE="flask-tp8:1.0"
+CONTAINER="flask-tp8"
+TAR="/opt/docker/flask-tp8.tar"
+
+start_app() {
+    echo "[TP8] aguardando Docker..."
+    i=0
+    while ! docker info >/dev/null 2>&1; do
+        i=$((i + 1))
+        [ "$i" -ge 30 ] && {
+            echo "[TP8] Docker não ficou disponível."
+            return 1
+        }
+        sleep 1
+    done
+
+    if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+        echo "[TP8] carregando imagem Docker..."
+        docker load -i "$TAR" || return 1
+    fi
+
+    if docker container inspect "$CONTAINER" >/dev/null 2>&1; then
+        docker start "$CONTAINER"
+    else
+        docker run -d \
+            --name "$CONTAINER" \
+            --restart unless-stopped \
+            -p 5000:5000 \
+            "$IMAGE"
+    fi
+}
+
+stop_app() {
+    docker stop "$CONTAINER" >/dev/null 2>&1 || true
+}
+
+case "$1" in
+    start) start_app ;;
+    stop) stop_app ;;
+    restart)
+        stop_app
+        start_app
+        ;;
+    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac
